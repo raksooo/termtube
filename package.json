@@ -6,8 +6,16 @@
   "author": "Oskar Nyberg",
   "license": "MIT",
   "private": false,
+  "scripts": {
+    "build": "npx babel src -d build",
+    "build-watch": "npx babel src -w -d build",
+    "start": "node build/index.js"
+  },
   "devDependencies": {
-    "babel": "^6.23.0",
+    "@babel/cli": "^7.1.2",
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.0",
+    "@babel/preset-react": "^7.0.0",
     "blessed": "^0.1.81",
     "react": "^16.5.2",
     "react-blessed": "^0.3.0"
