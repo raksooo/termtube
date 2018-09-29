@@ -2,15 +2,22 @@ import React from 'react';
 import blessed from 'blessed';
 import { render } from 'react-blessed';
 import { Main } from './main';
+import { getVideos } from '../videoRetriever';
 
-const App = () => {
-  const promise = new Promise((resolve, reject) => {
-    setTimeout(resolve, 1500);
-  });
+class App extends React.Component {
+  state = {
+    videos: getVideos(),
+  };
 
-  return (
-    <Main subscriptionFeed={promise} />
-  );
+  render() {
+    const {
+      videos,
+    } = this.state;
+
+    return (
+      <Main subscriptionFeed={videos} />
+    );
+  }
 }
  
 export const run = () => {

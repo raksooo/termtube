@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { log } from '../log';
 
 export class LoadingScreen extends React.Component {
   state = {
@@ -15,7 +16,7 @@ export class LoadingScreen extends React.Component {
       promise,
     } = this.props;
 
-    promise.then(data => this.setState({ finished: true, data }));
+    promise.then(data => this.setState({ finished: true, data })).catch(log);
 
     this.interval = setInterval(() => {
       this.setState(LoadingScreen._incrementElapsedSeconds);
