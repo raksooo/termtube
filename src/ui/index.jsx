@@ -4,8 +4,12 @@ import { render } from 'react-blessed';
 import { Main } from './main';
 
 const App = () => {
+  const promise = new Promise((resolve, reject) => {
+    setTimeout(resolve, 1500);
+  });
+
   return (
-    <Main />
+    <Main subscriptionFeed={promise} />
   );
 }
  
