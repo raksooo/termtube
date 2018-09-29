@@ -3,6 +3,7 @@ import path from 'path';
 import { readFile, writeFile } from 'fs';
 import { parseString } from 'xml2js';
 import { promisify } from 'util';
+import { log } from './log';
 
 const readFileAsync = promisify(readFile);
 const writeFileAsync = promisify(writeFile);
@@ -13,6 +14,7 @@ const CONFIG_PATH = path.join(os.homedir(), '.config', CONFIG_NAME);
 
 const CONFIG_KEY_PLAYER = "player";
 const CONFIG_KEY_SUBSCRIPTIONS = "subscriptions";
+const CONFIG_KEY_MOST_RECENT = "mostRecent";
 
 export const getSubscriptions = () => {
   return readConfig()
@@ -68,4 +70,15 @@ const readConfig = () => {
     .then(config => JSON.parse(config.toString()))
     .catch(() => ({}));
 };
+
+export const getMostRecent = () => {
+  return readConfig()
+    .then(config => config[CONFIG_KEY_MOST_RECENT])
+    .then(mostRecent => mostRecent && new Date(mostRecent));
+}
+
+export const trySetMostRecent = date => {
+  return getMostRecent()
+    .then(mostRecent => (mostRecent == null || date > mostRecent) && editConfig({ mostRecent: date }));
+}
 

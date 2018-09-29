@@ -34,7 +34,6 @@ if (!process.argv.slice(2).length) {
       } else {
         program.outputHelp();
       }
-    })
-    .catch(log);
+    });
 }
 
