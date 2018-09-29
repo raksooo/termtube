@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+import { spawn } from 'child_process';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { getVideoPlayer, trySetMostRecent } from '../configHandler';
@@ -91,8 +91,7 @@ export class Feed extends React.Component {
     const links = videos.map(video => video.link);
     getVideoPlayer()
       .then(player => {
-        const command = `${player} ${links.join(' ')}`;
-        exec(command);
+        const child = spawn(player, links);
       });
   }
 
