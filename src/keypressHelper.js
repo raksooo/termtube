@@ -28,7 +28,10 @@ function selectVideo({ checked, current }) {
 }
 
 function play({ videos, checked, setSelected }) {
-  const selectedVideos = checked.map(index => videos[index]);
+  const selectedVideos = checked
+    .sort((a, b) => a - b)
+    .reverse()
+    .map(index => videos[index]);
   playVideos(selectedVideos);
 
   const maxDate = selectedVideos
