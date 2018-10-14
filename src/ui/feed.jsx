@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { trySetMostRecent } from '../configHandler';
+import { getMostRecent, trySetMostRecent } from '../configHandler';
 import { playVideos } from '../player';
+import { log } from '../log';
 
 export class Feed extends React.Component {
 
@@ -21,31 +22,15 @@ export class Feed extends React.Component {
   shouldComponentUpdate(nextProps, nextState) {
     return this.props.data !== nextProps.data
       || this.state.checked !== nextState.checked
+      || this.state.checked.every((item, index) => nextState.checked[index] === item)
       || this.state.current !== nextState.current;
   }
 
   componentDidMount() {
-    this._setAutoSelected();
+    this._setSelected();
   }
 
-  _setAutoSelected() {
-    const {
-      data: videos,
-    } = this.props;
-
-    const autoSelected = videos
-      .map(({ video, moreRecent }, index) => ({ video, index, moreRecent }))
-      .filter(({ moreRecent }) => moreRecent)
-      .map(o => o.index);
-
-    this.setState({ checked: autoSelected });
-  }
-
-  _resetAutoSelected() {
-    this.setState({ checked: [] });
-  }
-
-  _createRow({ video: { author, title }}, index) {
+  _createRow({ author, title }, index) {
     const {
       checked,
     } = this.state;
@@ -73,21 +58,42 @@ export class Feed extends React.Component {
         this.setState({ checked });
       }
     } else if (key === 'p') {
-      const selectedVideos = checked.map(index => videos[index].video);
+      const selectedVideos = checked.map(index => videos[index]);
       playVideos(selectedVideos);
 
       var maxDate = selectedVideos
         .map(video => new Date(video.isoDate))
         .reduce((acc, current) => acc > current ? acc : current);
-      trySetMostRecent(maxDate);
-      this._resetAutoSelected();
+      trySetMostRecent(maxDate)
+        .then(() => {
+          this._setSelected();
+        });
     } else if (key === 'o') {
-      const video = videos[current].video;
+      const video = videos[current];
       playVideos([video]);
     } else if (key === 'r') {
-      trySetMostRecent(new Date());
-      this._resetAutoSelected();
+      trySetMostRecent(new Date())
+        .then(() => {
+          this._setSelected();
+        });
     }
+  }
+
+  _setSelected() {
+    const {
+      data: videos,
+    } = this.props;
+
+    getMostRecent()
+      .then(mostRecent => {
+        const selected = [];
+        videos.forEach((video, index) => {
+          if (new Date(video.isoDate) > mostRecent) {
+            selected.push(index);
+          }
+        });
+        this.setState({ checked: selected });
+      });
   }
 
   _onSelectItem(item) {
