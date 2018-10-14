@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { getMostRecent, trySetMostRecent } from '../configHandler';
-import { playVideos } from '../player';
-import { log } from '../log';
+import { getMostRecent } from '../configHandler';
+import { onKeyPress } from '../keypressHelper';
 
 export class Feed extends React.Component {
 
@@ -17,6 +16,7 @@ export class Feed extends React.Component {
     this._createRow = this._createRow.bind(this);
     this._onKeyPress = this._onKeyPress.bind(this);
     this._onSelectItem = this._onSelectItem.bind(this);
+    this._setSelected = this._setSelected.bind(this);
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -36,47 +36,6 @@ export class Feed extends React.Component {
     } = this.state;
 
     return ` ${checked.includes(index) ? '✔' : ' '} ${author} - ${title}`;
-  }
-
-  _onKeyPress(key) {
-    const {
-      data: videos,
-    } = this.props;
-
-    const {
-      current,
-      checked,
-    } = this.state;
-
-    if (key === ' ') {
-      const checkedIndex = checked.indexOf(current);
-      if (checkedIndex > -1) {
-        checked.splice(checkedIndex, 1);
-        this.setState({ checked });
-      } else {
-        checked.push(current);
-        this.setState({ checked });
-      }
-    } else if (key === 'p') {
-      const selectedVideos = checked.map(index => videos[index]);
-      playVideos(selectedVideos);
-
-      var maxDate = selectedVideos
-        .map(video => new Date(video.isoDate))
-        .reduce((acc, current) => acc > current ? acc : current);
-      trySetMostRecent(maxDate)
-        .then(() => {
-          this._setSelected();
-        });
-    } else if (key === 'o') {
-      const video = videos[current];
-      playVideos([video]);
-    } else if (key === 'r') {
-      trySetMostRecent(new Date())
-        .then(() => {
-          this._setSelected();
-        });
-    }
   }
 
   _setSelected() {
@@ -101,9 +60,36 @@ export class Feed extends React.Component {
     this.setState({ current: index });
   }
 
+  _onKeyPress(key) {
+    const {
+      data: videos,
+    } = this.props;
+
+    const {
+      checked,
+      current,
+    } = this.state;
+
+    const args = {
+      videos,
+      checked,
+      current,
+      key,
+      setSelected: this._setSelected
+    };
+
+    const newState = onKeyPress(args);
+    newState != null && this.setState(newState);
+  }
+
   render() {
     const {
       data: videos,
+    } = this.props;
+
+    const {
+      checked,
+      current,
     } = this.props;
 
     const rows = videos
