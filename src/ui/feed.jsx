@@ -84,6 +84,9 @@ export class Feed extends React.Component {
     } else if (key === 'o') {
       const video = videos[current].video;
       playVideos([video]);
+    } else if (key === 'r') {
+      trySetMostRecent(new Date());
+      this._resetAutoSelected();
     }
   }
 
