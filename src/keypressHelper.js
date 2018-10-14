@@ -7,6 +7,7 @@ const keyMappings = {
   'p': play,
   'o': playOnly,
   'r': reset,
+  'a': toggleAllNone,
 };
 
 export const onKeyPress = ({ key, ...args }) => {
@@ -45,5 +46,14 @@ function playOnly({ videos, current }) {
 function reset({ setSelected }) {
   trySetMostRecent(new Date())
     .then(setSelected);
+}
+
+function toggleAllNone({ videos, checked }) {
+  if (checked.length > 0) {
+    return { checked: [] };
+  } else {
+    const checked = videos.map((_, index) => index);
+    return { checked };
+  }
 }
 
