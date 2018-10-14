@@ -1,15 +1,14 @@
-import { spawn } from 'child_process';
 import React from 'react';
 import PropTypes from 'prop-types';
-import { getVideoPlayer, trySetMostRecent } from '../configHandler';
-import { log } from '../log';
+import { trySetMostRecent } from '../configHandler';
+import { playVideos } from '../player';
 
 export class Feed extends React.Component {
 
-    state = {
-      checked: [],
-      current: 0,
-    }
+  state = {
+    checked: [],
+    current: 0,
+  }
 
   constructor(props, context) {
     super(props, context);
@@ -17,6 +16,12 @@ export class Feed extends React.Component {
     this._createRow = this._createRow.bind(this);
     this._onKeyPress = this._onKeyPress.bind(this);
     this._onSelectItem = this._onSelectItem.bind(this);
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return this.props.data !== nextProps.data
+      || this.state.checked !== nextState.checked
+      || this.state.current !== nextState.current;
   }
 
   componentDidMount() {
@@ -69,7 +74,7 @@ export class Feed extends React.Component {
       }
     } else if (key === 'p') {
       const selectedVideos = checked.map(index => videos[index].video);
-      this._playVideos(selectedVideos);
+      playVideos(selectedVideos);
 
       var maxDate = selectedVideos
         .map(video => new Date(video.isoDate))
@@ -78,21 +83,13 @@ export class Feed extends React.Component {
       this._resetAutoSelected();
     } else if (key === 'o') {
       const video = videos[current].video;
-      this._playVideos([video]);
+      playVideos([video]);
     }
   }
 
   _onSelectItem(item) {
     const index = item.index - 2;
     this.setState({ current: index });
-  }
-
-  _playVideos(videos) {
-    const links = videos.map(video => video.link);
-    getVideoPlayer()
-      .then(player => {
-        const child = spawn(player, links);
-      });
   }
 
   render() {

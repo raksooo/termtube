@@ -9,6 +9,10 @@ class App extends React.Component {
     videos: getVideos(),
   };
 
+  shouldComponentUpdate(nextProps, nextState) {
+    return this.state.videos !== nextState.videos;
+  }
+
   render() {
     const {
       videos,

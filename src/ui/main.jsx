@@ -4,6 +4,11 @@ import { LoadingScreen } from './loadingScreen';
 import { Feed } from './feed';
 
 export class Main extends React.Component {
+
+  shouldComponentUpdate(nextProps) {
+    return this.props.subscriptionFeed !== nextProps.subscriptionFeed;
+  }
+
   render() {
     const {
       subscriptionFeed
