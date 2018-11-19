@@ -1,6 +1,6 @@
 {
   "name": "termtube",
-  "version": "1",
+  "version": "1.0.0",
   "description": "YouTube subscription player CLI",
   "main": "index.js",
   "bin": {
