@@ -20,6 +20,7 @@ If a video player is not set, TermTube will try to use mpv.
 
 ## Usage
 ```
+$ termtube --help
 Usage: termtube [options] [command]
 
 Options:
@@ -30,9 +31,9 @@ Options:
 Commands:
 
   set [options]
-```
 
-```
+
+$ termtube set --help
 Usage: set [options]
 
 Options:
