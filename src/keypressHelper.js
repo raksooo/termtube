@@ -6,7 +6,8 @@ const keyMappings = {
   ' ': selectVideo,
   'p': play,
   'o': playOnly,
-  'r': reset,
+  'n': setToNow,
+  'r': reload,
   'a': toggleAllNone,
 };
 
@@ -46,9 +47,13 @@ function playOnly({ videos, current }) {
   playVideos([video]);
 }
 
-function reset({ setSelected }) {
+function setToNow({ setSelected }) {
   trySetMostRecent(new Date())
     .then(setSelected);
+}
+
+function reload({ reload }) {
+  reload();
 }
 
 function toggleAllNone({ videos, checked }) {

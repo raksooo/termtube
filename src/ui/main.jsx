@@ -11,7 +11,8 @@ export class Main extends React.Component {
 
   render() {
     const {
-      subscriptionFeed
+      subscriptionFeed,
+      reload,
     } = this.props;
 
     return (
@@ -22,7 +23,7 @@ export class Main extends React.Component {
            border={{type: 'line'}}
            style={{border: {fg: 'blue'}}}>
         <LoadingScreen promise={subscriptionFeed}>
-          <Feed />
+          <Feed reload={reload} />
         </LoadingScreen>
       </box>
     );

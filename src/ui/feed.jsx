@@ -63,6 +63,7 @@ export class Feed extends React.Component {
   _onKeyPress(key) {
     const {
       data: videos,
+      reload,
     } = this.props;
 
     const {
@@ -75,7 +76,8 @@ export class Feed extends React.Component {
       checked,
       current,
       key,
-      setSelected: this._setSelected
+      setSelected: this._setSelected,
+      reload,
     };
 
     const newState = onKeyPress(args);

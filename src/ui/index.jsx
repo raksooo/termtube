@@ -9,8 +9,18 @@ class App extends React.Component {
     videos: getVideos(),
   };
 
+  constructor(props, context) {
+    super(props, context);
+
+    this.reload = this.reload.bind(this);
+  }
+
   shouldComponentUpdate(nextProps, nextState) {
     return this.state.videos !== nextState.videos;
+  }
+
+  reload() {
+    this.setState({ videos: getVideos() });
   }
 
   render() {
@@ -19,7 +29,7 @@ class App extends React.Component {
     } = this.state;
 
     return (
-      <Main subscriptionFeed={videos} />
+      <Main subscriptionFeed={videos} reload={this.reload} />
     );
   }
 }
