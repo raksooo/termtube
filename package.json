@@ -1,10 +1,10 @@
 {
   "name": "termtube",
-  "version": "0.0.1",
+  "version": "1",
   "description": "YouTube subscription player CLI",
   "main": "index.js",
   "bin": {
-    "brunocast": "build/brunocast-client-2.0.0-x86_64.AppImage"
+    "termtube": "build/index.js"
   },
   "author": "Oskar Nyberg",
   "license": "MIT",
