@@ -17,7 +17,7 @@
     "build": "npx babel src -d build",
     "build-watch": "npx babel src -s -w -d build",
     "start": "node build/index.js",
-    "build-prod": "node_modules/.bin/rollup -c"
+    "build-prod": "node_modules/.bin/rollup --banner '#!/usr/bin/env node' -c"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.2",
