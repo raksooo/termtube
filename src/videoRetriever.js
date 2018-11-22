@@ -25,7 +25,7 @@ const rssContentToVideoList = content => {
   return content
     .filter(feed => feed != null)
     .map(feed => feed.items)
-    .reduce((accumulator, current) => accumulator.concat(current), []);
+    .flat();
 };
 
 const sortByDate = list => {

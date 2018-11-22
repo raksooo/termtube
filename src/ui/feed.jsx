@@ -69,7 +69,7 @@ export class Feed extends React.Component {
   }
 
   _onSelectItem(item) {
-    const index = item.index - 2;
+    const index = item.index - 3;
     this.setState({ current: index });
   }
 
@@ -107,6 +107,7 @@ export class Feed extends React.Component {
 
     return (
       <element>
+        { showInfo === true && (<InfoDialog video={videos[current]}  />) }
         <list
           items={rows}
           onKeypress={this._onKeyPress}

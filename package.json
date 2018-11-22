@@ -2,9 +2,9 @@
   "name": "termtube",
   "version": "1.0.0",
   "description": "YouTube subscription player CLI",
-  "main": "index.js",
+  "main": "termtube.js",
   "bin": {
-    "termtube": "build/index.js"
+    "termtube": "termtube.js"
   },
   "author": "Oskar Nyberg",
   "license": "MIT",
@@ -16,7 +16,8 @@
   "scripts": {
     "build": "npx babel src -d build",
     "build-watch": "npx babel src -s -w -d build",
-    "start": "node build/index.js"
+    "start": "node build/index.js",
+    "build-prod": "node_modules/.bin/rollup -c"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.2",
@@ -25,11 +26,16 @@
     "@babel/plugin-proposal-decorators": "^7.1.2",
     "@babel/preset-env": "^7.1.0",
     "@babel/preset-react": "^7.0.0",
-    "blessed": "^0.1.81",
-    "react-blessed": "^0.3.0"
+    "rollup": "^0.65.0",
+    "rollup-plugin-babel": "^4.0.3",
+    "rollup-plugin-node-resolve": "^3.3.0",
+    "rollup-plugin-peer-deps-external": "^2.2.0",
+    "rollup-plugin-root-import": "^0.2.2"
   },
   "dependencies": {
     "react": "^16.5.2",
+    "blessed": "^0.1.81",
+    "react-blessed": "^0.3.0",
     "commander": "^2.18.0",
     "date-difference": "^1.0.0",
     "rss-parser": "^3.4.3",

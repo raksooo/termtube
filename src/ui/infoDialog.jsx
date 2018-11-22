@@ -8,6 +8,14 @@ export class InfoDialog extends React.Component {
     info: {},
   }
 
+  static getDerivedStateFromProps(props, state) {
+    if (state.info.videoId !== props.video.id.split(':')[2]) {
+      return { info: {} };
+    }
+
+    return null;
+  }
+
   componentDidMount() {
     this._fetchInfo();
   }
@@ -40,35 +48,40 @@ export class InfoDialog extends React.Component {
       info,
     } = this.state;
 
-    const capitalized = property.charAt(0).toUpperCase() + property.slice(1);
-    const data = fn(info[property]);
-    return `${capitalized}: ${data}`;
+    let label = betterName || property;
+    label = label.charAt(0).toUpperCase() + label.slice(1);
+
+    while (label.length < 9) {
+      label = ' ' + label;
+    }
+
+    const data = info[property] == null ? 'Loading...' : fn(info[property]);
+    return `${label}: ${data}`;
+  }
+
+  _formatDuration(seconds) {
+    const date = new Date(null);
+    date.setSeconds(seconds);
+    return date.toISOString().substr(11, 8);
   }
 
   render() {
-    const {
-      video,
-    } = this.props;
-
-    const {
-      info,
-    } = this.state;
-
     const rows = [
       ['title'],
       ['owner', 'uploader'],
       ['datePublished', 'date'],
-      ['duration'],
+      ['duration', null, this._formatDuration],
       ['views'],
       ['likeCount', 'likes'],
       ['dislikeCount', 'dislikes'],
+      ['url'],
     ];
 
     return (
       <box top="center"
            left="center"
            width="700"
-           height="800"
+           height="450"
            border={{type: 'line'}}
            style={{border: {fg: 'blue'}}}>
         <list items={rows.map(this._createInfoRow.bind(this))} />
