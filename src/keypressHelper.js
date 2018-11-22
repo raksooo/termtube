@@ -9,6 +9,7 @@ const keyMappings = {
   'n': setToNow,
   'r': reload,
   'a': toggleAllNone,
+  'i': toggleInfo,
 };
 
 export const onKeyPress = ({ key, ...args }) => {
@@ -63,5 +64,9 @@ function toggleAllNone({ videos, checked }) {
     const checked = videos.map((_, index) => index);
     return { checked };
   }
+}
+
+function toggleInfo({ showInfo }) {
+  return { showInfo: !showInfo };
 }
 

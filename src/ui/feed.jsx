@@ -1,5 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import dateDifference from 'date-difference';
+import { InfoDialog } from './infoDialog';
 import { getMostRecent } from '../configHandler';
 import { onKeyPress } from '../keypressHelper';
 
@@ -8,6 +10,7 @@ export class Feed extends React.Component {
   state = {
     checked: [],
     current: 0,
+    showInfo: false,
   }
 
   constructor(props, context) {
@@ -30,12 +33,22 @@ export class Feed extends React.Component {
     this._setSelected();
   }
 
-  _createRow({ author, title }, index) {
+  _createRow(video, index) {
     const {
       checked,
     } = this.state;
 
-    return ` ${checked.includes(index) ? '✔' : ' '} ${author} - ${title}`;
+    const {
+      author,
+      title,
+      pubDate,
+    } = video;
+
+    const check = checked.includes(index) ? '✔' : ' ';
+    const date = dateDifference(new Date(pubDate), new Date(), { compact: true });
+    const datePadding = date.length < 4 ? ' ' : '';
+
+    return ` ${check} ${datePadding}${date} - ${author} - ${title}`;
   }
 
   _setSelected() {
@@ -66,18 +79,12 @@ export class Feed extends React.Component {
       reload,
     } = this.props;
 
-    const {
-      checked,
-      current,
-    } = this.state;
-
     const args = {
       videos,
-      checked,
-      current,
       key,
       setSelected: this._setSelected,
       reload,
+      ...this.state,
     };
 
     const newState = onKeyPress(args);
@@ -92,27 +99,30 @@ export class Feed extends React.Component {
     const {
       checked,
       current,
-    } = this.props;
+      showInfo,
+    } = this.state;
 
     const rows = videos
       .map(this._createRow);
 
     return (
-      <list
-        items={rows}
-        onKeypress={this._onKeyPress}
-        onSelectItem={this._onSelectItem}
-        style={{ selected: { fg: 'green' }}}
-        data={"foo"}
-        keys
-        vi
-        focused
-      />
+      <element>
+        <list
+          items={rows}
+          onKeypress={this._onKeyPress}
+          onSelectItem={this._onSelectItem}
+          style={{ selected: { fg: 'green' }}}
+          data={"foo"}
+          keys
+          vi
+          focused
+        />
+      </element>
     );
   }
 }
 
 Feed.propTypes = {
   data: PropTypes.array.isRequired,
-}
+};
 
