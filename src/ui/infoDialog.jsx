@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import youtubeInfo from 'youtube-info';
+import dateDifference from 'date-difference';
 
 export class InfoDialog extends React.Component {
 
@@ -40,7 +41,7 @@ export class InfoDialog extends React.Component {
     }
 
     return youtubeInfo(id)
-      .then(info => this.setState({ info }));
+      .then(info => this.setState({ info: { ...info, ...video } }));
   }
 
   _createInfoRow([property, betterName, fn = o => o]) {
@@ -65,11 +66,22 @@ export class InfoDialog extends React.Component {
     return date.toISOString().substr(11, 8);
   }
 
+  _formatDate(pubDate) {
+    const date = new Date(pubDate);
+    const diff = dateDifference(date, new Date(), { compact: true });
+    const dateString = date
+      .toISOString()
+      .substr(0, 19)
+      .replace('T', ' ');
+
+    return `${diff} (${dateString})`;
+  }
+
   render() {
     const rows = [
       ['title'],
       ['owner', 'uploader'],
-      ['datePublished', 'date'],
+      ['pubDate', 'date', this._formatDate],
       ['duration', null, this._formatDuration],
       ['views'],
       ['likeCount', 'likes'],
@@ -80,10 +92,10 @@ export class InfoDialog extends React.Component {
     return (
       <box top="center"
            left="center"
-           width="700"
-           height="450"
+           width="50%"
+           height="50%"
            border={{type: 'line'}}
-           style={{border: {fg: 'blue'}}}>
+           style={{border: {fg: 'yellow'}}}>
         <list items={rows.map(this._createInfoRow.bind(this))} />
       </box>
     );

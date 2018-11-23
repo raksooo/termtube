@@ -1,4 +1,4 @@
-#!/usr/bin/node
+#!/usr/bin/env node
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -8,11 +8,11 @@ var util = require('util');
 var React = _interopDefault(require('react'));
 var PropTypes = _interopDefault(require('prop-types'));
 var youtubeInfo = _interopDefault(require('youtube-info'));
+var dateDifference = _interopDefault(require('date-difference'));
 var os = _interopDefault(require('os'));
 var path = _interopDefault(require('path'));
 var xml2js = require('xml2js');
 var child_process = require('child_process');
-var dateDifference = _interopDefault(require('date-difference'));
 var Parser = _interopDefault(require('rss-parser'));
 var blessed = _interopDefault(require('blessed'));
 var reactBlessed = require('react-blessed');
@@ -356,7 +356,7 @@ function (_React$Component) {
 
       return youtubeInfo(id).then(function (info) {
         return _this2.setState({
-          info: info
+          info: _objectSpread({}, info, video)
         });
       });
     }
@@ -390,20 +390,30 @@ function (_React$Component) {
       return date.toISOString().substr(11, 8);
     }
   }, {
+    key: "_formatDate",
+    value: function _formatDate(pubDate) {
+      var date = new Date(pubDate);
+      var diff = dateDifference(date, new Date(), {
+        compact: true
+      });
+      var dateString = date.toISOString().substr(0, 19).replace('T', ' ');
+      return "".concat(diff, " (").concat(dateString, ")");
+    }
+  }, {
     key: "render",
     value: function render() {
-      var rows = [['title'], ['owner', 'uploader'], ['datePublished', 'date'], ['duration', null, this._formatDuration], ['views'], ['likeCount', 'likes'], ['dislikeCount', 'dislikes'], ['url']];
+      var rows = [['title'], ['owner', 'uploader'], ['pubDate', 'date', this._formatDate], ['duration', null, this._formatDuration], ['views'], ['likeCount', 'likes'], ['dislikeCount', 'dislikes'], ['url']];
       return React.createElement("box", {
         top: "center",
         left: "center",
-        width: "700",
-        height: "450",
+        width: "50%",
+        height: "50%",
         border: {
           type: 'line'
         },
         style: {
           border: {
-            fg: 'blue'
+            fg: 'yellow'
           }
         }
       }, React.createElement("list", {
@@ -668,14 +678,9 @@ function (_React$Component) {
     value: function _createRow(video, index) {
       var checked = this.state.checked;
       var author = video.author,
-          title = video.title,
-          pubDate = video.pubDate;
+          title = video.title;
       var check = checked.includes(index) ? '✔' : ' ';
-      var date = dateDifference(new Date(pubDate), new Date(), {
-        compact: true
-      });
-      var datePadding = date.length < 4 ? ' ' : '';
-      return " ".concat(check, " ").concat(datePadding).concat(date, " - ").concat(author, " - ").concat(title);
+      return " ".concat(check, " ").concat(author, " - ").concat(title);
     }
   }, {
     key: "_setSelected",

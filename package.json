@@ -14,10 +14,9 @@
     "url": "git+https://github.com/raksooo/termtube"
   },
   "scripts": {
-    "build": "npx babel src -d build",
-    "build-watch": "npx babel src -s -w -d build",
     "start": "node build/index.js",
-    "build-prod": "node_modules/.bin/rollup --banner '#!/usr/bin/env node' -c"
+    "build-watch": "npx babel src -s -w -d build",
+    "build": "node_modules/.bin/rollup --banner '#!/usr/bin/env node' -c"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.2",
@@ -29,7 +28,6 @@
     "rollup": "^0.65.0",
     "rollup-plugin-babel": "^4.0.3",
     "rollup-plugin-node-resolve": "^3.3.0",
-    "rollup-plugin-peer-deps-external": "^2.2.0",
     "rollup-plugin-root-import": "^0.2.2"
   },
   "dependencies": {

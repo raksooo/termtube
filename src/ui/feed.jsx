@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import dateDifference from 'date-difference';
 import { InfoDialog } from './infoDialog';
 import { getMostRecent } from '../configHandler';
 import { onKeyPress } from '../keypressHelper';
@@ -41,14 +40,10 @@ export class Feed extends React.Component {
     const {
       author,
       title,
-      pubDate,
     } = video;
 
     const check = checked.includes(index) ? '✔' : ' ';
-    const date = dateDifference(new Date(pubDate), new Date(), { compact: true });
-    const datePadding = date.length < 4 ? ' ' : '';
-
-    return ` ${check} ${datePadding}${date} - ${author} - ${title}`;
+    return ` ${check} ${author} - ${title}`;
   }
 
   _setSelected() {
