@@ -50,6 +50,8 @@ Options:
       o: Play video on active row without setting is as last watched video
       n: Set last watched to current date and time
       a: Select/deselect all videos
+      r: Fetch videos
+      f: Filter videos
       q: Quit
 ```
 

@@ -873,6 +873,7 @@ function (_React$Component) {
   }, {
     key: "_onSearchCancel",
     value: function _onSearchCancel() {
+      // Order of these calls is important to prevent infinite recursion.
       this.setState({
         showSearch: false
       });
