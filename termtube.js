@@ -246,7 +246,9 @@ function (_React$Component) {
     value: function _startLoading() {
       var _this2 = this;
 
-      this.props.loader().then(this._finishedLoading.bind(this)).catch(log);
+      this.props.loader().then(this._finishedLoading.bind(this)).catch(function (error) {
+        return log('LoadingScreen catch: ' + JSON.stringify(error));
+      });
       this.interval = setInterval(function () {
         _this2.setState(LoadingScreen._incrementElapsedSeconds);
       }, 1000);
@@ -303,10 +305,10 @@ function (_React$Component) {
 
       var width = loadingText.length;
       return React.createElement("box", {
-        top: "center",
+        top: "50%-2",
         left: "center",
         width: width,
-        height: "50"
+        height: 1
       }, loadingText);
     }
   }], [{
@@ -351,8 +353,8 @@ function (_React$Component) {
       return React.createElement("box", {
         top: "center",
         left: "center",
-        width: "50%",
-        height: "50%",
+        width: 70,
+        height: _InfoDialog.infoProps.length + 2,
         border: {
           type: 'line'
         },
@@ -373,6 +375,9 @@ function (_React$Component) {
 
   return InfoDialog;
 }(React.Component);
+InfoDialog.propTypes = {
+  video: PropTypes.object.isRequired
+};
 
 var _InfoDialog =
 /*#__PURE__*/
@@ -431,8 +436,8 @@ function (_React$Component2) {
   }, {
     key: "render",
     value: function render() {
-      var props = [['title'], ['owner', 'uploader'], ['pubDate', 'date', _InfoDialog._formatDate], ['duration', null, _InfoDialog._formatDuration], ['views'], ['likeCount', 'likes'], ['dislikeCount', 'dislikes'], ['url']];
-      var items = props.map(this._createInfoRow);
+      var items = _InfoDialog.infoProps.map(this._createInfoRow);
+
       return React.createElement("list", {
         items: items
       });
@@ -459,13 +464,57 @@ function (_React$Component2) {
   return _InfoDialog;
 }(React.Component);
 
-InfoDialog.propTypes = {
-  video: PropTypes.object.isRequired
-};
+_defineProperty(_InfoDialog, "infoProps", [['title'], ['owner', 'uploader'], ['pubDate', 'date', _InfoDialog._formatDate], ['duration', null, _InfoDialog._formatDuration], ['views'], ['likeCount', 'likes'], ['dislikeCount', 'dislikes'], ['url']]);
+
 _InfoDialog.propTypes = {
   video: PropTypes.object.isRequired,
   data: PropTypes.object.isRequired
 };
+
+var SearchDialog =
+/*#__PURE__*/
+function (_React$Component) {
+  _inherits(SearchDialog, _React$Component);
+
+  function SearchDialog() {
+    _classCallCheck(this, SearchDialog);
+
+    return _possibleConstructorReturn(this, _getPrototypeOf(SearchDialog).apply(this, arguments));
+  }
+
+  _createClass(SearchDialog, [{
+    key: "render",
+    value: function render() {
+      var _this$props = this.props,
+          open = _this$props.open,
+          onSearch = _this$props.onSearch,
+          onCancel = _this$props.onCancel;
+      var top = open ? "100%-2" : "100%";
+      return React.createElement("box", {
+        top: top,
+        left: -1,
+        width: "100%+2",
+        height: 3,
+        border: {
+          type: 'line'
+        },
+        style: {
+          border: {
+            fg: 'green'
+          }
+        }
+      }, "Filter:", React.createElement("textbox", {
+        left: 8,
+        onSubmit: onSearch,
+        onCancel: onCancel,
+        inputOnFocus: true,
+        focused: open
+      }));
+    }
+  }]);
+
+  return SearchDialog;
+}(React.Component);
 
 var readFileAsync = util.promisify(fs.readFile);
 var writeFileAsync = util.promisify(fs.writeFile);
@@ -574,7 +623,8 @@ var keyMappings = {
   'n': setToNow,
   'r': reload,
   'a': toggleAllNone,
-  'i': toggleInfo
+  'i': toggleInfo,
+  'f': toggleSearch
 };
 var onKeyPress = function onKeyPress(_ref) {
   var key = _ref.key,
@@ -584,12 +634,22 @@ var onKeyPress = function onKeyPress(_ref) {
 
   if (fn != null) {
     return fn(args);
+  } else if (key.charCodeAt(0) === 27) {
+    return esc(args);
   }
 };
+var esc = function esc(_ref2) {
+  var resetSearch = _ref2.resetSearch;
+  resetSearch();
+  return {
+    showInfo: false,
+    showSearch: false
+  };
+};
 
-function selectVideo(_ref2) {
-  var checked = _ref2.checked,
-      current = _ref2.current;
+function selectVideo(_ref3) {
+  var checked = _ref3.checked,
+      current = _ref3.current;
   var checkedIndex = checked.indexOf(current);
 
   if (checkedIndex > -1) {
@@ -603,14 +663,14 @@ function selectVideo(_ref2) {
   };
 }
 
-function play(_ref3) {
-  var videos = _ref3.videos,
-      checked = _ref3.checked,
-      setSelected = _ref3.setSelected;
+function play(_ref4) {
+  var data = _ref4.data,
+      checked = _ref4.checked,
+      setSelected = _ref4.setSelected;
   var selectedVideos = checked.sort(function (a, b) {
     return a - b;
   }).reverse().map(function (index) {
-    return videos[index];
+    return data[index];
   });
   playVideos(selectedVideos);
   var maxDate = selectedVideos.map(function (video) {
@@ -621,26 +681,26 @@ function play(_ref3) {
   trySetMostRecent(maxDate).then(setSelected);
 }
 
-function playOnly(_ref4) {
-  var videos = _ref4.videos,
-      current = _ref4.current;
-  var video = videos[current];
+function playOnly(_ref5) {
+  var data = _ref5.data,
+      current = _ref5.current;
+  var video = data[current];
   playVideos([video]);
 }
 
-function setToNow(_ref5) {
-  var setSelected = _ref5.setSelected;
+function setToNow(_ref6) {
+  var setSelected = _ref6.setSelected;
   trySetMostRecent(new Date()).then(setSelected);
 }
 
-function reload(_ref6) {
-  var reload = _ref6.reload;
+function reload(_ref7) {
+  var reload = _ref7.reload;
   reload();
 }
 
-function toggleAllNone(_ref7) {
-  var videos = _ref7.videos,
-      checked = _ref7.checked;
+function toggleAllNone(_ref8) {
+  var videos = _ref8.videos,
+      checked = _ref8.checked;
 
   if (checked.length > 0) {
     return {
@@ -657,10 +717,17 @@ function toggleAllNone(_ref7) {
   }
 }
 
-function toggleInfo(_ref8) {
-  var showInfo = _ref8.showInfo;
+function toggleInfo(_ref9) {
+  var showInfo = _ref9.showInfo;
   return {
     showInfo: !showInfo
+  };
+}
+
+function toggleSearch(_ref10) {
+  var showSearch = _ref10.showSearch;
+  return {
+    showSearch: !showSearch
   };
 }
 
@@ -677,15 +744,20 @@ function (_React$Component) {
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Feed).call(this, props, context));
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "state", {
+      videos: [],
       checked: [],
       current: 0,
-      showInfo: false
+      showInfo: false,
+      showSearch: false
     });
 
     _this._createRow = _this._createRow.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     _this._onKeyPress = _this._onKeyPress.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     _this._onSelectItem = _this._onSelectItem.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     _this._setSelected = _this._setSelected.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this._onSearch = _this._onSearch.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this._onSearchCancel = _this._onSearchCancel.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this._fillVideoList = _this._fillVideoList.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     return _this;
   }
 
@@ -694,33 +766,60 @@ function (_React$Component) {
     value: function shouldComponentUpdate(nextProps, nextState) {
       return this.props.data !== nextProps.data || this.state.checked !== nextState.checked || this.state.checked.every(function (item, index) {
         return nextState.checked[index] === item;
-      }) || this.state.current !== nextState.current;
+      }) || this.state.current !== nextState.current || this.state.showInfo !== nextState.showInfo || this.state.showSearch !== nextState.showSearch;
     }
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      this._setSelected();
+      var videos = this._fillVideoList();
+
+      this._setSelected(videos);
+    }
+  }, {
+    key: "_getFullVideoList",
+    value: function _getFullVideoList() {
+      return this.props.data.map(function (video, i) {
+        return {
+          i: i,
+          video: video
+        };
+      });
+    }
+  }, {
+    key: "_fillVideoList",
+    value: function _fillVideoList() {
+      var videos = this._getFullVideoList();
+
+      this.setState({
+        videos: videos
+      });
+      return videos;
     }
   }, {
     key: "_createRow",
-    value: function _createRow(video, index) {
+    value: function _createRow(_ref) {
+      var video = _ref.video,
+          i = _ref.i;
       var checked = this.state.checked;
       var author = video.author,
           title = video.title;
-      var check = checked.includes(index) ? '✔' : ' ';
+      var check = checked.includes(i) ? '✔' : ' ';
       return " ".concat(check, " ").concat(author, " - ").concat(title);
     }
   }, {
     key: "_setSelected",
-    value: function _setSelected() {
+    value: function _setSelected(videos) {
       var _this2 = this;
 
-      var videos = this.props.data;
+      videos = videos || this.state.videos;
       getMostRecent().then(function (mostRecent) {
         var selected = [];
-        videos.forEach(function (video, index) {
+        videos.forEach(function (_ref2) {
+          var i = _ref2.i,
+              video = _ref2.video;
+
           if (new Date(video.isoDate) > mostRecent) {
-            selected.push(index);
+            selected.push(i);
           }
         });
 
@@ -733,21 +832,25 @@ function (_React$Component) {
     key: "_onSelectItem",
     value: function _onSelectItem(item) {
       var index = item.index - 2;
+      var videoIndex = this.state.videos[index].i;
       this.setState({
-        current: index
+        current: videoIndex
       });
     }
   }, {
     key: "_onKeyPress",
     value: function _onKeyPress(key) {
       var _this$props = this.props,
-          videos = _this$props.data,
+          data = _this$props.data,
           reload = _this$props.reload;
+      var videos = this.state.videos;
 
       var args = _objectSpread({
+        data: data,
         videos: videos,
         key: key,
         setSelected: this._setSelected,
+        resetSearch: this._fillVideoList,
         reload: reload
       }, this.state);
 
@@ -755,16 +858,40 @@ function (_React$Component) {
       newState != null && this.setState(newState);
     }
   }, {
+    key: "_onSearch",
+    value: function _onSearch(query) {
+      var result = this._getFullVideoList().filter(function (_ref3) {
+        var video = _ref3.video;
+        return JSON.stringify(video).toLowerCase().includes(query.toLowerCase());
+      });
+
+      this.setState({
+        videos: result,
+        showSearch: false
+      });
+    }
+  }, {
+    key: "_onSearchCancel",
+    value: function _onSearchCancel() {
+      this.setState({
+        showSearch: false
+      });
+
+      this._fillVideoList();
+    }
+  }, {
     key: "render",
     value: function render() {
-      var videos = this.props.data;
+      var data = this.props.data;
       var _this$state = this.state,
           checked = _this$state.checked,
           current = _this$state.current,
-          showInfo = _this$state.showInfo;
+          showInfo = _this$state.showInfo,
+          showSearch = _this$state.showSearch,
+          videos = _this$state.videos;
       var rows = videos.map(this._createRow);
       return React.createElement("element", null, showInfo === true && React.createElement(InfoDialog, {
-        video: videos[current]
+        video: data[current]
       }), React.createElement("list", {
         items: rows,
         onKeypress: this._onKeyPress,
@@ -776,7 +903,11 @@ function (_React$Component) {
         },
         keys: true,
         vi: true,
-        focused: true
+        focused: !showSearch
+      }), React.createElement(SearchDialog, {
+        open: showSearch,
+        onSearch: this._onSearch,
+        onCancel: this._onSearchCancel
       }));
     }
   }]);

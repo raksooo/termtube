@@ -10,14 +10,25 @@ const keyMappings = {
   'r': reload,
   'a': toggleAllNone,
   'i': toggleInfo,
+  'f': toggleSearch,
 };
 
 export const onKeyPress = ({ key, ...args }) => {
   const fn = keyMappings[key];
   if (fn != null) {
     return fn(args);
+  } else if (key.charCodeAt(0) === 27) {
+    return esc(args);
   }
 };
+
+export const esc = ({ resetSearch }) => {
+  resetSearch();
+  return {
+    showInfo: false,
+    showSearch: false,
+  }
+}
 
 function selectVideo({ checked, current }) {
   const checkedIndex = checked.indexOf(current);
@@ -29,11 +40,11 @@ function selectVideo({ checked, current }) {
   return { checked };
 }
 
-function play({ videos, checked, setSelected }) {
+function play({ data, checked, setSelected }) {
   const selectedVideos = checked
     .sort((a, b) => a - b)
     .reverse()
-    .map(index => videos[index]);
+    .map(index => data[index]);
   playVideos(selectedVideos);
 
   const maxDate = selectedVideos
@@ -43,8 +54,8 @@ function play({ videos, checked, setSelected }) {
     .then(setSelected);
 }
 
-function playOnly({ videos, current }) {
-  const video = videos[current];
+function playOnly({ data, current }) {
+  const video = data[current];
   playVideos([video]);
 }
 
@@ -68,5 +79,9 @@ function toggleAllNone({ videos, checked }) {
 
 function toggleInfo({ showInfo }) {
   return { showInfo: !showInfo };
+}
+
+function toggleSearch({ showSearch }) {
+  return { showSearch: !showSearch };
 }
 

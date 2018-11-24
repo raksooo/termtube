@@ -20,7 +20,7 @@ export class LoadingScreen extends React.Component {
   _startLoading() {
     this.props.loader()
       .then(this._finishedLoading.bind(this))
-      .catch(log);
+      .catch(error => log('LoadingScreen catch: ' + JSON.stringify(error)));
 
     this.interval = setInterval(() => {
       this.setState(LoadingScreen._incrementElapsedSeconds);
@@ -86,10 +86,10 @@ export class LoadingScreen extends React.Component {
     const width = loadingText.length;
 
     return (
-      <box top="center"
+      <box top="50%-2"
            left="center"
            width={width}
-           height="50">
+           height={1}>
         {loadingText}
       </box>
     );

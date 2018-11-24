@@ -21,8 +21,8 @@ export class InfoDialog extends React.Component {
     return (
       <box top="center"
            left="center"
-           width="50%"
-           height="50%"
+           width={70}
+           height={_InfoDialog.infoProps.length + 2}
            border={{type: 'line'}}
            style={{border: {fg: 'yellow'}}}>
         <LoadingScreen loader={this._fetchInfo} showSeconds={false}>
@@ -38,6 +38,17 @@ InfoDialog.propTypes = {
 };
 
 class _InfoDialog extends React.Component {
+
+  static infoProps = [
+    ['title'],
+    ['owner', 'uploader'],
+    ['pubDate', 'date', _InfoDialog._formatDate],
+    ['duration', null, _InfoDialog._formatDuration],
+    ['views'],
+    ['likeCount', 'likes'],
+    ['dislikeCount', 'dislikes'],
+    ['url'],
+  ];
 
   constructor(props, context) {
     super(props, context);
@@ -96,18 +107,7 @@ class _InfoDialog extends React.Component {
   }
 
   render() {
-    const props = [
-      ['title'],
-      ['owner', 'uploader'],
-      ['pubDate', 'date', _InfoDialog._formatDate],
-      ['duration', null, _InfoDialog._formatDuration],
-      ['views'],
-      ['likeCount', 'likes'],
-      ['dislikeCount', 'dislikes'],
-      ['url'],
-    ];
-
-    const items = props.map(this._createInfoRow);
+    const items = _InfoDialog.infoProps.map(this._createInfoRow);
 
     return (
       <list items={items} />
