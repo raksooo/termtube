@@ -2,29 +2,40 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { log } from '../log';
 
+const initialState = {
+  elapsedSeconds: 0,
+  finished: false,
+  data: null,
+};
+
 export class LoadingScreen extends React.Component {
-  state = {
-    elapsedSeconds: 0,
-    finished: false,
-    data: null,
-  };
+  state = initialState;
 
   interval = null;
 
   componentDidMount() {
-    const {
-      promise,
-    } = this.props;
+    this._startLoading();
+  }
 
-    promise.then(data => this.setState({ finished: true, data })).catch(log);
+  _startLoading() {
+    this.props.loader()
+      .then(this._finishedLoading.bind(this))
+      .catch(log);
 
     this.interval = setInterval(() => {
       this.setState(LoadingScreen._incrementElapsedSeconds);
     }, 1000);
   }
 
-  componentWillUnmount() {
+  _finishedLoading(data) {
+    this.setState({ finished: true, data })
     clearInterval(this.interval);
+  }
+
+  _reload() {
+    this.setState(initialState);
+
+    this._startLoading();
   }
 
   static _incrementElapsedSeconds(prevState) {
@@ -32,6 +43,10 @@ export class LoadingScreen extends React.Component {
   }
 
   _getLoadingText() {
+    const {
+      showSeconds = true,
+    } = this.props;
+
     const {
       elapsedSeconds,
     } = this.state;
@@ -41,21 +56,30 @@ export class LoadingScreen extends React.Component {
     const numberOfSpaces = maxDots - numberOfDots;
     const dots = '.'.repeat(numberOfDots);
     const spaces = ' '.repeat(numberOfSpaces);
-    return `Loading${dots}${spaces} (${elapsedSeconds}s)`;
+    const seconds = showSeconds ? ` (${elapsedSeconds}s)` : '';
+    return `Loading${dots}${spaces}${seconds}`;
   }
 
-  render() {
+  _showChildren() {
     const {
       children,
     } = this.props;
 
     const {
-      finished,
       data,
     } = this.state;
 
-    if (finished === true) {
-      return React.cloneElement(children, { data });
+    const childrenProps = {
+      data,
+      reload: this._reload.bind(this),
+    };
+
+    return React.cloneElement(children, childrenProps);
+  }
+
+  render() {
+    if (this.state.finished === true) {
+      return this._showChildren();
     }
 
     const loadingText = this._getLoadingText();
@@ -73,6 +97,6 @@ export class LoadingScreen extends React.Component {
 }
 
 LoadingScreen.propTypes = {
-  promise: PropTypes.object.isRequired,
+  loader: PropTypes.func.isRequired,
 }
 

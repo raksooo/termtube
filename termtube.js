@@ -206,6 +206,11 @@ var log = function log(message) {
   appendFileAsync('termtube.log', "\n".concat(messageString));
 };
 
+var initialState = {
+  elapsedSeconds: 0,
+  finished: false,
+  data: null
+};
 var LoadingScreen =
 /*#__PURE__*/
 function (_React$Component) {
@@ -224,11 +229,7 @@ function (_React$Component) {
 
     _this = _possibleConstructorReturn(this, (_getPrototypeOf2 = _getPrototypeOf(LoadingScreen)).call.apply(_getPrototypeOf2, [this].concat(args)));
 
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "state", {
-      elapsedSeconds: 0,
-      finished: false,
-      data: null
-    });
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "state", initialState);
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "interval", null);
 
@@ -238,47 +239,64 @@ function (_React$Component) {
   _createClass(LoadingScreen, [{
     key: "componentDidMount",
     value: function componentDidMount() {
+      this._startLoading();
+    }
+  }, {
+    key: "_startLoading",
+    value: function _startLoading() {
       var _this2 = this;
 
-      var promise = this.props.promise;
-      promise.then(function (data) {
-        return _this2.setState({
-          finished: true,
-          data: data
-        });
-      }).catch(log);
+      this.props.loader().then(this._finishedLoading.bind(this)).catch(log);
       this.interval = setInterval(function () {
         _this2.setState(LoadingScreen._incrementElapsedSeconds);
       }, 1000);
     }
   }, {
-    key: "componentWillUnmount",
-    value: function componentWillUnmount() {
+    key: "_finishedLoading",
+    value: function _finishedLoading(data) {
+      this.setState({
+        finished: true,
+        data: data
+      });
       clearInterval(this.interval);
+    }
+  }, {
+    key: "_reload",
+    value: function _reload() {
+      this.setState(initialState);
+
+      this._startLoading();
     }
   }, {
     key: "_getLoadingText",
     value: function _getLoadingText() {
+      var _this$props$showSecon = this.props.showSeconds,
+          showSeconds = _this$props$showSecon === void 0 ? true : _this$props$showSecon;
       var elapsedSeconds = this.state.elapsedSeconds;
       var maxDots = 3;
       var numberOfDots = elapsedSeconds % (maxDots + 1);
       var numberOfSpaces = maxDots - numberOfDots;
       var dots = '.'.repeat(numberOfDots);
       var spaces = ' '.repeat(numberOfSpaces);
-      return "Loading".concat(dots).concat(spaces, " (").concat(elapsedSeconds, "s)");
+      var seconds = showSeconds ? " (".concat(elapsedSeconds, "s)") : '';
+      return "Loading".concat(dots).concat(spaces).concat(seconds);
+    }
+  }, {
+    key: "_showChildren",
+    value: function _showChildren() {
+      var children = this.props.children;
+      var data = this.state.data;
+      var childrenProps = {
+        data: data,
+        reload: this._reload.bind(this)
+      };
+      return React.cloneElement(children, childrenProps);
     }
   }, {
     key: "render",
     value: function render() {
-      var children = this.props.children;
-      var _this$state = this.state,
-          finished = _this$state.finished,
-          data = _this$state.data;
-
-      if (finished === true) {
-        return React.cloneElement(children, {
-          data: data
-        });
+      if (this.state.finished === true) {
+        return this._showChildren();
       }
 
       var loadingText = this._getLoadingText();
@@ -303,7 +321,7 @@ function (_React$Component) {
   return LoadingScreen;
 }(React.Component);
 LoadingScreen.propTypes = {
-  promise: PropTypes.object.isRequired
+  loader: PropTypes.func.isRequired
 };
 
 var InfoDialog =
@@ -788,52 +806,11 @@ var sortByDate = function sortByDate(list) {
   });
 };
 
-var App =
-/*#__PURE__*/
-function (_React$Component) {
-  _inherits(App, _React$Component);
-
-  function App(props, context) {
-    var _this;
-
-    _classCallCheck(this, App);
-
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(App).call(this, props, context));
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "state", {
-      videos: getVideos()
-    });
-
-    _this._reload = _this._reload.bind(_assertThisInitialized(_assertThisInitialized(_this)));
-    return _this;
-  }
-
-  _createClass(App, [{
-    key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps) {
-      return this.props.subscriptionFeed !== nextProps.subscriptionFeed;
-    }
-  }, {
-    key: "_reload",
-    value: function _reload() {
-      this.setState({
-        videos: getVideos()
-      });
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var videos = this.state.videos;
-      return React.createElement(LoadingScreen, {
-        promise: videos
-      }, React.createElement(Feed, {
-        reload: this._reload
-      }));
-    }
-  }]);
-
-  return App;
-}(React.Component);
+var App = function App() {
+  return React.createElement(LoadingScreen, {
+    loader: getVideos
+  }, React.createElement(Feed, null));
+};
 
 var options = {
   title: 'Termtube',

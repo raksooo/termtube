@@ -2,6 +2,8 @@ import babel from 'rollup-plugin-babel';
 import nodeResolve from 'rollup-plugin-node-resolve';
 import rootImport from 'rollup-plugin-root-import';
 
+const pkg = require('./package.json');
+
 export default {
   input: 'src/index.js',
   external: ['prop-types', 'events', 'fs', 'path', 'v8', ...Object.keys(pkg['dependencies'])],
