@@ -760,55 +760,6 @@ Feed.propTypes = {
   data: PropTypes.array.isRequired
 };
 
-var Main =
-/*#__PURE__*/
-function (_React$Component) {
-  _inherits(Main, _React$Component);
-
-  function Main() {
-    _classCallCheck(this, Main);
-
-    return _possibleConstructorReturn(this, _getPrototypeOf(Main).apply(this, arguments));
-  }
-
-  _createClass(Main, [{
-    key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps) {
-      return this.props.subscriptionFeed !== nextProps.subscriptionFeed;
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this$props = this.props,
-          subscriptionFeed = _this$props.subscriptionFeed,
-          reload = _this$props.reload;
-      return React.createElement("box", {
-        top: "center",
-        left: "center",
-        width: "100%",
-        height: "100%",
-        border: {
-          type: 'line'
-        },
-        style: {
-          border: {
-            fg: 'blue'
-          }
-        }
-      }, React.createElement(LoadingScreen, {
-        promise: subscriptionFeed
-      }, React.createElement(Feed, {
-        reload: reload
-      })));
-    }
-  }]);
-
-  return Main;
-}(React.Component);
-Main.propTypes = {
-  subscriptionFeed: PropTypes.object.isRequired
-};
-
 var parser = new Parser();
 var getVideos = function getVideos() {
   return getSubscriptions().then(parseAllSubscriptions).then(rssContentToVideoList).then(sortByDate); //.then(videos => videos.slice(0, 50))
@@ -853,18 +804,18 @@ function (_React$Component) {
       videos: getVideos()
     });
 
-    _this.reload = _this.reload.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this._reload = _this._reload.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     return _this;
   }
 
   _createClass(App, [{
     key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState) {
-      return this.state.videos !== nextState.videos;
+    value: function shouldComponentUpdate(nextProps) {
+      return this.props.subscriptionFeed !== nextProps.subscriptionFeed;
     }
   }, {
-    key: "reload",
-    value: function reload() {
+    key: "_reload",
+    value: function _reload() {
       this.setState({
         videos: getVideos()
       });
@@ -873,23 +824,25 @@ function (_React$Component) {
     key: "render",
     value: function render() {
       var videos = this.state.videos;
-      return React.createElement(Main, {
-        subscriptionFeed: videos,
-        reload: this.reload
-      });
+      return React.createElement(LoadingScreen, {
+        promise: videos
+      }, React.createElement(Feed, {
+        reload: this._reload
+      }));
     }
   }]);
 
   return App;
 }(React.Component);
 
+var options = {
+  title: 'Termtube',
+  autoPadding: true,
+  smartCSR: true
+};
 var run = function run() {
-  var screen = blessed.screen({
-    autoPadding: true,
-    smartCSR: true,
-    title: 'Termtube'
-  });
-  screen.key(['escape', 'q', 'C-c'], function () {
+  var screen = blessed.screen(options);
+  screen.key(['q', 'C-c'], function () {
     return process.exit(0);
   });
   reactBlessed.render(React.createElement(App, null), screen);
