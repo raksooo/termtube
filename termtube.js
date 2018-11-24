@@ -365,7 +365,8 @@ function (_React$Component) {
         loader: this._fetchInfo,
         showSeconds: false
       }, React.createElement(_InfoDialog, {
-        video: this.props.video
+        video: this.props.video,
+        data: {}
       })));
     }
   }]);
@@ -460,6 +461,10 @@ function (_React$Component2) {
 
 InfoDialog.propTypes = {
   video: PropTypes.object.isRequired
+};
+_InfoDialog.propTypes = {
+  video: PropTypes.object.isRequired,
+  data: PropTypes.object.isRequired
 };
 
 var readFileAsync = util.promisify(fs.readFile);

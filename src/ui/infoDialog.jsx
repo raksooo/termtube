@@ -26,12 +26,16 @@ export class InfoDialog extends React.Component {
            border={{type: 'line'}}
            style={{border: {fg: 'yellow'}}}>
         <LoadingScreen loader={this._fetchInfo} showSeconds={false}>
-          <_InfoDialog video={this.props.video} />
+          <_InfoDialog video={this.props.video} data={{}} />
         </LoadingScreen>
       </box>
     );
   }
 }
+
+InfoDialog.propTypes = {
+  video: PropTypes.object.isRequired,
+};
 
 class _InfoDialog extends React.Component {
 
@@ -111,7 +115,8 @@ class _InfoDialog extends React.Component {
   }
 }
 
-InfoDialog.propTypes = {
+_InfoDialog.propTypes = {
   video: PropTypes.object.isRequired,
+  data: PropTypes.object.isRequired,
 };
 
