@@ -835,9 +835,9 @@ function (_React$PureComponent) {
     key: "_onSelectItem",
     value: function _onSelectItem(item) {
       var index = item.index - 2;
-      var videoIndex = this.state.videos[index].i;
+      var current = this.state.videos[index].i;
       this.setState({
-        current: videoIndex
+        current: current
       });
     }
   }, {
