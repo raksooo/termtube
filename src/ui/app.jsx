@@ -5,7 +5,7 @@ import { getVideos } from '../videoRetriever';
 
 export const App = () => (
   <LoadingScreen loader={getVideos}>
-    <Feed />
+    <Feed data={[]} />
   </LoadingScreen>
 );
 

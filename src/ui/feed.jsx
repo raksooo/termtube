@@ -64,7 +64,7 @@ export class Feed extends React.Component {
   }
 
   _onSelectItem(item) {
-    const index = item.index - 3;
+    const index = item.index - 2;
     this.setState({ current: index });
   }
 
@@ -108,7 +108,6 @@ export class Feed extends React.Component {
           onKeypress={this._onKeyPress}
           onSelectItem={this._onSelectItem}
           style={{ selected: { fg: 'green' }}}
-          data={"foo"}
           keys
           vi
           focused

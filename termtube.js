@@ -329,56 +329,66 @@ var InfoDialog =
 function (_React$Component) {
   _inherits(InfoDialog, _React$Component);
 
-  function InfoDialog() {
-    var _getPrototypeOf2;
-
+  function InfoDialog(props, context) {
     var _this;
 
     _classCallCheck(this, InfoDialog);
 
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    _this = _possibleConstructorReturn(this, (_getPrototypeOf2 = _getPrototypeOf(InfoDialog)).call.apply(_getPrototypeOf2, [this].concat(args)));
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "state", {
-      info: {}
-    });
-
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(InfoDialog).call(this, props, context));
+    _this._fetchInfo = _this._fetchInfo.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     return _this;
   }
 
   _createClass(InfoDialog, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      this._fetchInfo();
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      this._fetchInfo();
-    }
-  }, {
     key: "_fetchInfo",
     value: function _fetchInfo() {
-      var _this2 = this;
-
-      var video = this.props.video;
-      var info = this.state.info;
-      var id = video.id.split(':')[2];
-
-      if (info.videoId === id) {
-        return;
-      }
-
-      return youtubeInfo(id).then(function (info) {
-        return _this2.setState({
-          info: _objectSpread({}, info, video)
-        });
-      });
+      var id = this.props.video.id.split(':')[2];
+      return youtubeInfo(id);
     }
   }, {
+    key: "render",
+    value: function render() {
+      return React.createElement("box", {
+        top: "center",
+        left: "center",
+        width: "50%",
+        height: "50%",
+        border: {
+          type: 'line'
+        },
+        style: {
+          border: {
+            fg: 'yellow'
+          }
+        }
+      }, React.createElement(LoadingScreen, {
+        loader: this._fetchInfo,
+        showSeconds: false
+      }, React.createElement(_InfoDialog, {
+        video: this.props.video
+      })));
+    }
+  }]);
+
+  return InfoDialog;
+}(React.Component);
+
+var _InfoDialog =
+/*#__PURE__*/
+function (_React$Component2) {
+  _inherits(_InfoDialog, _React$Component2);
+
+  function _InfoDialog(props, context) {
+    var _this2;
+
+    _classCallCheck(this, _InfoDialog);
+
+    _this2 = _possibleConstructorReturn(this, _getPrototypeOf(_InfoDialog).call(this, props, context));
+    _this2._createInfoRow = _this2._createInfoRow.bind(_assertThisInitialized(_assertThisInitialized(_this2)));
+    return _this2;
+  }
+
+  _createClass(_InfoDialog, [{
     key: "_createInfoRow",
     value: function _createInfoRow(_ref) {
       var _ref2 = _slicedToArray(_ref, 3),
@@ -389,7 +399,12 @@ function (_React$Component) {
         return o;
       } : _ref2$;
 
-      var info = this.state.info;
+      var _this$props = this.props,
+          video = _this$props.video,
+          data = _this$props.data;
+
+      var info = _objectSpread({}, video, data);
+
       var label = betterName || property;
       label = label.charAt(0).toUpperCase() + label.slice(1);
 
@@ -397,10 +412,31 @@ function (_React$Component) {
         label = ' ' + label;
       }
 
-      var data = info[property] == null ? 'Loading...' : fn(info[property]);
-      return "".concat(label, ": ").concat(data);
+      var content = fn(info[property]);
+      return "".concat(label, ": ").concat(content);
     }
   }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate() {
+      var _this$props2 = this.props,
+          video = _this$props2.video,
+          data = _this$props2.data,
+          reload = _this$props2.reload;
+
+      if (!video.id.includes(data.videoId)) {
+        reload();
+      }
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var props = [['title'], ['owner', 'uploader'], ['pubDate', 'date', _InfoDialog._formatDate], ['duration', null, _InfoDialog._formatDuration], ['views'], ['likeCount', 'likes'], ['dislikeCount', 'dislikes'], ['url']];
+      var items = props.map(this._createInfoRow);
+      return React.createElement("list", {
+        items: items
+      });
+    }
+  }], [{
     key: "_formatDuration",
     value: function _formatDuration(seconds) {
       var date = new Date(null);
@@ -417,42 +453,11 @@ function (_React$Component) {
       var dateString = date.toISOString().substr(0, 19).replace('T', ' ');
       return "".concat(diff, " (").concat(dateString, ")");
     }
-  }, {
-    key: "render",
-    value: function render() {
-      var rows = [['title'], ['owner', 'uploader'], ['pubDate', 'date', this._formatDate], ['duration', null, this._formatDuration], ['views'], ['likeCount', 'likes'], ['dislikeCount', 'dislikes'], ['url']];
-      return React.createElement("box", {
-        top: "center",
-        left: "center",
-        width: "50%",
-        height: "50%",
-        border: {
-          type: 'line'
-        },
-        style: {
-          border: {
-            fg: 'yellow'
-          }
-        }
-      }, React.createElement("list", {
-        items: rows.map(this._createInfoRow.bind(this))
-      }));
-    }
-  }], [{
-    key: "getDerivedStateFromProps",
-    value: function getDerivedStateFromProps(props, state) {
-      if (state.info.videoId !== props.video.id.split(':')[2]) {
-        return {
-          info: {}
-        };
-      }
-
-      return null;
-    }
   }]);
 
-  return InfoDialog;
+  return _InfoDialog;
 }(React.Component);
+
 InfoDialog.propTypes = {
   video: PropTypes.object.isRequired
 };
@@ -722,7 +727,7 @@ function (_React$Component) {
   }, {
     key: "_onSelectItem",
     value: function _onSelectItem(item) {
-      var index = item.index - 3;
+      var index = item.index - 2;
       this.setState({
         current: index
       });
@@ -764,7 +769,6 @@ function (_React$Component) {
             fg: 'green'
           }
         },
-        data: "foo",
         keys: true,
         vi: true,
         focused: true
@@ -809,7 +813,9 @@ var sortByDate = function sortByDate(list) {
 var App = function App() {
   return React.createElement(LoadingScreen, {
     loader: getVideos
-  }, React.createElement(Feed, null));
+  }, React.createElement(Feed, {
+    data: []
+  }));
 };
 
 var options = {

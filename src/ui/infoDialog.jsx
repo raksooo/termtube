@@ -2,71 +2,73 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import youtubeInfo from 'youtube-info';
 import dateDifference from 'date-difference';
+import { LoadingScreen } from './loadingScreen';
 
 export class InfoDialog extends React.Component {
 
-  state = {
-    info: {},
-  }
+  constructor(props, context) {
+    super(props, context);
 
-  static getDerivedStateFromProps(props, state) {
-    if (state.info.videoId !== props.video.id.split(':')[2]) {
-      return { info: {} };
-    }
-
-    return null;
-  }
-
-  componentDidMount() {
-    this._fetchInfo();
-  }
-
-  componentDidUpdate() {
-    this._fetchInfo();
+    this._fetchInfo = this._fetchInfo.bind(this);
   }
 
   _fetchInfo() {
-    const {
-      video,
-    } = this.props;
+    const id = this.props.video.id.split(':')[2];
+    return youtubeInfo(id);
+  }
 
-    const {
-      info,
-    } = this.state;
+  render() {
+    return (
+      <box top="center"
+           left="center"
+           width="50%"
+           height="50%"
+           border={{type: 'line'}}
+           style={{border: {fg: 'yellow'}}}>
+        <LoadingScreen loader={this._fetchInfo} showSeconds={false}>
+          <_InfoDialog video={this.props.video} />
+        </LoadingScreen>
+      </box>
+    );
+  }
+}
 
-    const id = video.id.split(':')[2];
+class _InfoDialog extends React.Component {
 
-    if (info.videoId === id) {
-      return;
-    }
+  constructor(props, context) {
+    super(props, context);
 
-    return youtubeInfo(id)
-      .then(info => this.setState({ info: { ...info, ...video } }));
+    this._createInfoRow = this._createInfoRow.bind(this);
   }
 
   _createInfoRow([property, betterName, fn = o => o]) {
     const {
-      info,
-    } = this.state;
+      video,
+      data,
+    } = this.props;
+
+    const info = {
+      ...video,
+      ...data,
+    };
 
     let label = betterName || property;
     label = label.charAt(0).toUpperCase() + label.slice(1);
-
     while (label.length < 9) {
       label = ' ' + label;
     }
 
-    const data = info[property] == null ? 'Loading...' : fn(info[property]);
-    return `${label}: ${data}`;
+    const content = fn(info[property]);
+    return `${label}: ${content}`;
   }
 
-  _formatDuration(seconds) {
+  static _formatDuration(seconds) {
     const date = new Date(null);
     date.setSeconds(seconds);
     return date.toISOString().substr(11, 8);
   }
 
-  _formatDate(pubDate) {
+  static _formatDate(pubDate) {
     const date = new Date(pubDate);
     const diff = dateDifference(date, new Date(), { compact: true });
     const dateString = date
@@ -77,27 +79,34 @@ export class InfoDialog extends React.Component {
     return `${diff} (${dateString})`;
   }
 
+  componentDidUpdate() {
+    const {
+      video,
+      data,
+      reload,
+    } = this.props;
+
+    if (!video.id.includes(data.videoId)) {
+      reload();
+    }
+  }
+
   render() {
-    const rows = [
+    const props = [
       ['title'],
       ['owner', 'uploader'],
-      ['pubDate', 'date', this._formatDate],
-      ['duration', null, this._formatDuration],
+      ['pubDate', 'date', _InfoDialog._formatDate],
+      ['duration', null, _InfoDialog._formatDuration],
       ['views'],
       ['likeCount', 'likes'],
       ['dislikeCount', 'dislikes'],
       ['url'],
     ];
 
+    const items = props.map(this._createInfoRow);
+
     return (
-      <box top="center"
-           left="center"
-           width="50%"
-           height="50%"
-           border={{type: 'line'}}
-           style={{border: {fg: 'yellow'}}}>
-        <list items={rows.map(this._createInfoRow.bind(this))} />
-      </box>
+      <list items={items} />
     );
   }
 }
