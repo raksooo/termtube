@@ -5,7 +5,7 @@ import { SearchDialog } from './searchDialog';
 import { getMostRecent } from '../configHandler';
 import { onKeyPress } from '../keypressHelper';
 
-export class Feed extends React.Component {
+export class Feed extends React.PureComponent {
 
   state = {
     videos: [],
@@ -24,85 +24,46 @@ export class Feed extends React.Component {
     this._setSelected = this._setSelected.bind(this);
     this._onSearch = this._onSearch.bind(this);
     this._onSearchCancel = this._onSearchCancel.bind(this);
-    this._fillVideoList = this._fillVideoList.bind(this);
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    return this.props.data !== nextProps.data
-      || this.state.checked !== nextState.checked
-      || this.state.checked.every((item, index) => nextState.checked[index] === item)
-      || this.state.current !== nextState.current
-      || this.state.showInfo !== nextState.showInfo
-      || this.state.showSearch !== nextState.showSearch;
+    this._resetVideos = this._resetVideos.bind(this);
   }
 
   componentDidMount() {
-    const videos = this._fillVideoList();
-    this._setSelected(videos);
+    this._resetVideos();
+    this._setSelected();
   }
 
-  _getFullVideoList() {
+  _getAllVideos() {
     return this.props.data.map((video, i) => ({ i, video }));
   }
 
-  _fillVideoList() {
-    const videos = this._getFullVideoList();
-    this.setState({ videos });
-    return videos;
+  _resetVideos() {
+    this.setState({ videos: this._getAllVideos() });
   }
 
-  _createRow({ video, i }) {
-    const {
-      checked,
-    } = this.state;
-
-    const {
-      author,
-      title,
-    } = video;
-
-    const check = checked.includes(i) ? '✔' : ' ';
-    return ` ${check} ${author} - ${title}`;
-  }
-
-  _setSelected(videos) {
-    videos = videos || this.state.videos
-
+  _setSelected() {
     getMostRecent()
       .then(mostRecent => {
-        const selected = [];
-        videos.forEach(({ i, video }) => {
-          if (new Date(video.isoDate) > mostRecent) {
-            selected.push(i);
-          }
+        this.setState(state => {
+          const checked = state.videos
+            .filter(({ video }) => new Date(video.isoDate) > mostRecent)
+            .map(({ i }) => i);
+          return { checked };
         });
-        this.setState({ checked: selected });
       });
   }
 
   _onSelectItem(item) {
     const index = item.index - 2;
-    const videoIndex = this.state.videos[index].i;
-    this.setState({ current: videoIndex });
+    const current = this.state.videos[index].i;
+    this.setState({ current });
   }
 
   _onKeyPress(key) {
-    const {
-      data,
-      reload,
-    } = this.props;
-
-    const {
-      videos,
-    } = this.state;
-
     const args = {
-      data,
-      videos,
       key,
       setSelected: this._setSelected,
-      resetSearch: this._fillVideoList,
-      reload,
+      resetSearch: this._resetVideos,
+      ...this.props,
       ...this.state,
     };
 
@@ -111,23 +72,32 @@ export class Feed extends React.Component {
   }
 
   _onSearch(query) {
-    const result = this._getFullVideoList()
-      .filter(({ video }) => {
-        return JSON.stringify(video)
-          .toLowerCase()
-          .includes(query.toLowerCase());
-      });
+    const videos = this._getAllVideos()
+      .filter(({ video }) => this._searchMatch(query, video));
 
-    this.setState({
-      videos: result,
-      showSearch: false,
-    });
+    this.setState({ videos, showSearch: false, });
+  }
+
+  _searchMatch(query, video) {
+    return JSON.stringify(video)
+      .toLowerCase()
+      .includes(query.toLowerCase());
   }
 
   _onSearchCancel() {
     // Order of these calls is important to prevent infinite recursion.
     this.setState({ showSearch: false });
-    this._fillVideoList();
+    this._resetVideos();
+  }
+
+  _createRow({ video, i }) {
+    const {
+      author,
+      title,
+    } = video;
+
+    const check = this.state.checked.includes(i) ? '✔' : ' ';
+    return ` ${check} ${author} - ${title}`;
   }
 
   render() {
@@ -136,7 +106,6 @@ export class Feed extends React.Component {
     } = this.props;
 
     const {
-      checked,
       current,
       showInfo,
       showSearch,
@@ -149,14 +118,15 @@ export class Feed extends React.Component {
     return (
       <element>
         { showInfo === true && (<InfoDialog video={data[current]}  />) }
-        <list
-          items={rows}
-          onKeypress={this._onKeyPress}
-          onSelectItem={this._onSelectItem}
-          style={{ selected: { fg: 'green' }}}
-          keys
-          vi
-          focused={!showSearch} />
+
+        <list items={rows}
+              onKeypress={this._onKeyPress}
+              onSelectItem={this._onSelectItem}
+              style={{ selected: { fg: 'green' }}}
+              keys
+              vi
+              focused={!showSearch} />
+
         <SearchDialog open={showSearch}
                       onSearch={this._onSearch}
                       onCancel={this._onSearchCancel} />

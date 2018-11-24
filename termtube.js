@@ -161,8 +161,24 @@ function _slicedToArray(arr, i) {
   return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
 }
 
+function _toConsumableArray(arr) {
+  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+}
+
+function _arrayWithoutHoles(arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+    return arr2;
+  }
+}
+
 function _arrayWithHoles(arr) {
   if (Array.isArray(arr)) return arr;
+}
+
+function _iterableToArray(iter) {
+  if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
 }
 
 function _iterableToArrayLimit(arr, i) {
@@ -189,6 +205,10 @@ function _iterableToArrayLimit(arr, i) {
   }
 
   return _arr;
+}
+
+function _nonIterableSpread() {
+  throw new TypeError("Invalid attempt to spread non-iterable instance");
 }
 
 function _nonIterableRest() {
@@ -650,16 +670,18 @@ var esc = function esc(_ref2) {
 function selectVideo(_ref3) {
   var checked = _ref3.checked,
       current = _ref3.current;
-  var checkedIndex = checked.indexOf(current);
+  var newChecked;
 
-  if (checkedIndex > -1) {
-    checked.splice(checkedIndex, 1);
+  if (checked.indexOf(current) > -1) {
+    newChecked = checked.filter(function (i) {
+      return i !== current;
+    });
   } else {
-    checked.push(current);
+    newChecked = _toConsumableArray(checked).concat([current]);
   }
 
   return {
-    checked: checked
+    checked: newChecked
   };
 }
 
@@ -737,8 +759,8 @@ function toggleSearch(_ref12) {
 
 var Feed =
 /*#__PURE__*/
-function (_React$Component) {
-  _inherits(Feed, _React$Component);
+function (_React$PureComponent) {
+  _inherits(Feed, _React$PureComponent);
 
   function Feed(props, context) {
     var _this;
@@ -761,27 +783,20 @@ function (_React$Component) {
     _this._setSelected = _this._setSelected.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     _this._onSearch = _this._onSearch.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     _this._onSearchCancel = _this._onSearchCancel.bind(_assertThisInitialized(_assertThisInitialized(_this)));
-    _this._fillVideoList = _this._fillVideoList.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this._resetVideos = _this._resetVideos.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     return _this;
   }
 
   _createClass(Feed, [{
-    key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState) {
-      return this.props.data !== nextProps.data || this.state.checked !== nextState.checked || this.state.checked.every(function (item, index) {
-        return nextState.checked[index] === item;
-      }) || this.state.current !== nextState.current || this.state.showInfo !== nextState.showInfo || this.state.showSearch !== nextState.showSearch;
-    }
-  }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var videos = this._fillVideoList();
+      this._resetVideos();
 
-      this._setSelected(videos);
+      this._setSelected();
     }
   }, {
-    key: "_getFullVideoList",
-    value: function _getFullVideoList() {
+    key: "_getAllVideos",
+    value: function _getAllVideos() {
       return this.props.data.map(function (video, i) {
         return {
           i: i,
@@ -790,45 +805,29 @@ function (_React$Component) {
       });
     }
   }, {
-    key: "_fillVideoList",
-    value: function _fillVideoList() {
-      var videos = this._getFullVideoList();
-
+    key: "_resetVideos",
+    value: function _resetVideos() {
       this.setState({
-        videos: videos
+        videos: this._getAllVideos()
       });
-      return videos;
-    }
-  }, {
-    key: "_createRow",
-    value: function _createRow(_ref) {
-      var video = _ref.video,
-          i = _ref.i;
-      var checked = this.state.checked;
-      var author = video.author,
-          title = video.title;
-      var check = checked.includes(i) ? '✔' : ' ';
-      return " ".concat(check, " ").concat(author, " - ").concat(title);
     }
   }, {
     key: "_setSelected",
-    value: function _setSelected(videos) {
+    value: function _setSelected() {
       var _this2 = this;
 
-      videos = videos || this.state.videos;
       getMostRecent().then(function (mostRecent) {
-        var selected = [];
-        videos.forEach(function (_ref2) {
-          var i = _ref2.i,
-              video = _ref2.video;
-
-          if (new Date(video.isoDate) > mostRecent) {
-            selected.push(i);
-          }
-        });
-
-        _this2.setState({
-          checked: selected
+        _this2.setState(function (state) {
+          var checked = state.videos.filter(function (_ref) {
+            var video = _ref.video;
+            return new Date(video.isoDate) > mostRecent;
+          }).map(function (_ref2) {
+            var i = _ref2.i;
+            return i;
+          });
+          return {
+            checked: checked
+          };
         });
       });
     }
@@ -844,19 +843,11 @@ function (_React$Component) {
   }, {
     key: "_onKeyPress",
     value: function _onKeyPress(key) {
-      var _this$props = this.props,
-          data = _this$props.data,
-          reload = _this$props.reload;
-      var videos = this.state.videos;
-
       var args = _objectSpread({
-        data: data,
-        videos: videos,
         key: key,
         setSelected: this._setSelected,
-        resetSearch: this._fillVideoList,
-        reload: reload
-      }, this.state);
+        resetSearch: this._resetVideos
+      }, this.props, this.state);
 
       var newState = onKeyPress(args);
       newState != null && this.setState(newState);
@@ -864,15 +855,22 @@ function (_React$Component) {
   }, {
     key: "_onSearch",
     value: function _onSearch(query) {
-      var result = this._getFullVideoList().filter(function (_ref3) {
+      var _this3 = this;
+
+      var videos = this._getAllVideos().filter(function (_ref3) {
         var video = _ref3.video;
-        return JSON.stringify(video).toLowerCase().includes(query.toLowerCase());
+        return _this3._searchMatch(query, video);
       });
 
       this.setState({
-        videos: result,
+        videos: videos,
         showSearch: false
       });
+    }
+  }, {
+    key: "_searchMatch",
+    value: function _searchMatch(query, video) {
+      return JSON.stringify(video).toLowerCase().includes(query.toLowerCase());
     }
   }, {
     key: "_onSearchCancel",
@@ -882,14 +880,23 @@ function (_React$Component) {
         showSearch: false
       });
 
-      this._fillVideoList();
+      this._resetVideos();
+    }
+  }, {
+    key: "_createRow",
+    value: function _createRow(_ref4) {
+      var video = _ref4.video,
+          i = _ref4.i;
+      var author = video.author,
+          title = video.title;
+      var check = this.state.checked.includes(i) ? '✔' : ' ';
+      return " ".concat(check, " ").concat(author, " - ").concat(title);
     }
   }, {
     key: "render",
     value: function render() {
       var data = this.props.data;
       var _this$state = this.state,
-          checked = _this$state.checked,
           current = _this$state.current,
           showInfo = _this$state.showInfo,
           showSearch = _this$state.showSearch,
@@ -918,7 +925,7 @@ function (_React$Component) {
   }]);
 
   return Feed;
-}(React.Component);
+}(React.PureComponent);
 Feed.propTypes = {
   data: PropTypes.array.isRequired
 };

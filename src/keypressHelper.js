@@ -31,13 +31,13 @@ export const esc = ({ resetSearch }) => {
 }
 
 function selectVideo({ checked, current }) {
-  const checkedIndex = checked.indexOf(current);
-  if (checkedIndex > -1) {
-    checked.splice(checkedIndex, 1);
+  let newChecked;
+  if (checked.indexOf(current) > -1) {
+    newChecked = checked.filter(i => i !== current);
   } else {
-    checked.push(current);
+    newChecked = [ ...checked, current ];
   }
-  return { checked };
+  return { checked: newChecked };
 }
 
 function play({ data, checked, setSelected }) {
