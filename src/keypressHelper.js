@@ -69,11 +69,14 @@ function reload({ reload }) {
 }
 
 function toggleAllNone({ videos, checked }) {
-  if (checked.length > 0) {
+  const checkedVisible = videos
+    .filter(({ i }) => checked.includes(i))
+    .length;
+  if (checkedVisible) {
     return { checked: [] };
   } else {
-    const checked = videos.map((_, index) => index);
-    return { checked };
+    const newChecked = videos.map(({ i }) => i).concat(checked);
+    return { checked: newChecked };
   }
 }
 

@@ -701,31 +701,35 @@ function reload(_ref7) {
 function toggleAllNone(_ref8) {
   var videos = _ref8.videos,
       checked = _ref8.checked;
+  var checkedVisible = videos.filter(function (_ref9) {
+    var i = _ref9.i;
+    return checked.includes(i);
+  }).length;
 
-  if (checked.length > 0) {
+  if (checkedVisible) {
     return {
       checked: []
     };
   } else {
-    var _checked = videos.map(function (_, index) {
-      return index;
-    });
-
+    var newChecked = videos.map(function (_ref10) {
+      var i = _ref10.i;
+      return i;
+    }).concat(checked);
     return {
-      checked: _checked
+      checked: newChecked
     };
   }
 }
 
-function toggleInfo(_ref9) {
-  var showInfo = _ref9.showInfo;
+function toggleInfo(_ref11) {
+  var showInfo = _ref11.showInfo;
   return {
     showInfo: !showInfo
   };
 }
 
-function toggleSearch(_ref10) {
-  var showSearch = _ref10.showSearch;
+function toggleSearch(_ref12) {
+  var showSearch = _ref12.showSearch;
   return {
     showSearch: !showSearch
   };
